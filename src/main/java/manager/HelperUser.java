@@ -4,8 +4,6 @@ import model.User;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-
 import java.util.List;
 
 public class HelperUser extends HelperBase {
@@ -29,13 +27,10 @@ public class HelperUser extends HelperBase {
     public void fillLoginForm(String email, String password) {
         type(By.xpath("//input[@id='email']"), email);
         type(By.xpath("//input[@id='password']"), password);
-
     }
 
     public void submit() {
         click(By.xpath("//button[@type='submit']"));
-        //  div/app-login/form/button
-
     }
 
     public void openRegistrationForm() {
@@ -43,8 +38,8 @@ public class HelperUser extends HelperBase {
     }
 
     public void fillRegistrationForm(User user) {
-        type(By.id("name"),user.getName());
-        type(By.id("lastName"),user.getLastName());
+        type(By.id("name"), user.getName());
+        type(By.id("lastName"), user.getLastName());
         type(By.id("email"), user.getEmail());
         type(By.id("password"), user.getPassword());
     }
@@ -54,22 +49,19 @@ public class HelperUser extends HelperBase {
         click(By.className("checkbox-container"));
     }
 
-
-
     public String checkMessage() {
-        return wd.findElement(By.cssSelector("h2.message")).getText();
-        //return wd.findElement(By.xpath("//h2[text()='\"Login or Password incorrect\"']")).getText();
+        return wd.findElement(By.xpath("//h2[@class='message']")).getText();
     }
 
     public String checkWrongEmail() {
         return wd.findElement(By.cssSelector("div[class^='error'] div")).getText();
-
     }
 
     public void closeDialog() {
-        if(isElementPresent(By.xpath("//button[text()='Ok']"))) {
+        if (isElementPresent(By.xpath("//button[text()='Ok']"))) {
             click(By.xpath("//button[text()='Ok']"));
         }
+        wd.navigate().refresh();
     }
 
     public void checkTermofuse() {
@@ -83,5 +75,13 @@ public class HelperUser extends HelperBase {
 
     public boolean isYallaButtonNotActive() {
         return !wd.findElement(By.cssSelector("button[disabled]")).isEnabled();
+    }
+
+    public void clickAnyway() {
+        click(By.className("checkbox-container"));
+    }
+
+    public String checkWrongPassword() {
+        return wd.findElement(By.xpath("//div[text() = 'Password must contain minimum 8 symbols']")).getText();
     }
 }
