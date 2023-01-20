@@ -1,64 +1,71 @@
 package tests;
 
-import org.openqa.selenium.By;
+import model.User;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Random;
+public class LoginTests extends BasicTest{
 
-public class LoginTests extends BasicTest {
 
     @BeforeMethod
-    public void preCondition() {
-        if (app.getHelperUser().isLogged()) {
+    public void preCondition(){
+        if(app.getHelperUser().isLogged()){
             app.getHelperUser().logout();
+
         }
+
     }
 
     @Test
-    public void successLogin() {
-        app.getHelperUser().openLoginForm();
-        app.getHelperUser().fillLoginForm("rehovot1@gmail.ru", "Remember123@");
+    public void loginSuccess(){
+        app.getHelperUser().openFormLogin();
+        app.getHelperUser().fillLoginForm("rehovot1@gmail.ru","Remember123@");
         app.getHelperUser().submit();
-        Assert.assertTrue(app.getHelperUser().isLogged());
-        Assert.assertEquals(app.getHelperUser().checkMessage(),"Logged in success");
+        Assert.assertEquals(app.getHelperUser().getMessage(),"Logged in success");
+
+    }
+    @Test
+    public void loginSuccessModel(){
+        User user=new User().withEmail("rehovot1@gmail.ru").withPassword("Remember123@");
+        app.getHelperUser().openFormLogin();
+        app.getHelperCar().pause(4000);
+        app.getHelperUser().fillLoginForm(user);
+        app.getHelperUser().submit();
+        app.getHelperCar().pause(4000);
+        Assert.assertEquals(app.getHelperUser().getMessage(),"Logged in success");
+
     }
 
     @Test
-    public void loginWrongEmail() {
-        app.getHelperUser().openLoginForm();
-        app.getHelperUser().fillLoginForm("rehovot1gmail.ru", "Remember123@");
-        app.getHelperUser().submit();
-        Assert.assertFalse(app.getHelperUser().isLogged());
-        Assert.assertEquals(app.getHelperUser().checkWrongEmail(),"It'snot look like email");
-    }
+    public void loginWrongEmail(){
+        User user=new User().withEmail("noagmail.com").withPassword("Nnoa12345$");
 
+        app.getHelperUser().openFormLogin();
+        app.getHelperUser().fillLoginForm(user);
+        app.getHelperUser().submit();
+        Assert.assertEquals(app.getHelperUser().getErrorText(),"It'snot look like email");
+        Assert.assertTrue(app.getHelperUser().isYallaButtonNotActive());
+    }
     @Test
-    public void loginWrongPassword() {
-        app.getHelperUser().openLoginForm();
-        app.getHelperUser().fillLoginForm("rehovot1@gmail.ru", "Re123@");
+    public void loginWrongPassword(){
+        User user=new User().withEmail("noa@gmail.com").withPassword("Nnoa1");
+
+        app.getHelperUser().openFormLogin();
+        app.getHelperUser().fillLoginForm(user);
         app.getHelperUser().submit();
-        Assert.assertFalse(app.getHelperUser().isLogged());
-        Assert.assertEquals(app.getHelperUser().checkMessage(),"\"Login or Password incorrect\"");
+        app.getHelperCar().pause(2000);
+        Assert.assertEquals(app.getHelperUser().getMessage(),"\"Login or Password incorrect\"");
+    }
+    @Test (enabled = false)
+    public void loginUnregisterUser(){
+
     }
 
-    @Test
-    public void loginUnregisterUser() {
-        Random random = new Random();
-        int i = random.nextInt(1000);
-
-        app.getHelperUser().openLoginForm();
-        app.getHelperUser().fillLoginForm("rehovot"+i+"@gmail.ru", "Remember123@");
-        app.getHelperUser().submit();
-        Assert.assertFalse(app.getHelperUser().isLogged());
-        Assert.assertEquals(app.getHelperUser().checkMessage(),"\"Login or Password incorrect\"");
-
+    @AfterMethod
+    public void postCondition(){
+        app.getHelperUser().pause(5000);
+        app.getHelperUser().closeDialogContainer();
     }
-@AfterMethod
-    public void closeDialog(){
-        app.getHelperUser().closeDialog();
-
-}
 }

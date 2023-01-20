@@ -1,40 +1,63 @@
 package manager;
 
+
 import model.User;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import java.util.List;
+import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 
 public class HelperUser extends HelperBase {
     public HelperUser(WebDriver wd) {
         super(wd);
     }
 
-    public boolean isLogged() {
-        List<WebElement> list = wd.findElements(By.xpath("//a[text()=' Logout ']"));
-        return list.size() > 0;
-    }
 
-    public void logout() {
-        click(By.xpath("//div[@class = 'header']/a[5]"));
-    }
-
-    public void openLoginForm() {
+    public void openFormLogin() {
         click(By.xpath("//a[text()=' Log in ']"));
     }
 
     public void fillLoginForm(String email, String password) {
-        type(By.xpath("//input[@id='email']"), email);
-        type(By.xpath("//input[@id='password']"), password);
+        type(By.id("email"), email);
+        type(By.id("password"), password);
     }
 
-    public void submit() {
-        click(By.xpath("//button[@type='submit']"));
+    public void fillLoginForm(User user) {
+        type(By.id("email"), user.getEmail());
+        type(By.id("password"), user.getPassword());
+    }
+
+
+    public String getMessage() {
+        return wd.findElement(By.cssSelector("div.dialog-container>h2")).getText();
+    }
+
+    public void closeDialogContainer() {
+        if (isElementPresent(By.xpath("//button[text()='Ok']"))) {
+
+            click(By.xpath("//button[text()='Ok']"));
+        }
+    }
+
+    public boolean isLogged() {
+        return isElementPresent(By.xpath("//button[text()=' Logout ']"));
+        //return isElementPresent(By.cssSelector("div.header a:nth-child(5)"));
+    }
+
+    public void logout() {
+        click(By.xpath("//button[text()=' Logout ']"));
+        // click(By.cssSelector("div.header a:nth-child(5)"));
+    }
+
+    public String getErrorText() {
+        return wd.findElement(By.cssSelector("div.error")).getText();
+    }
+
+    public boolean isYallaButtonNotActive() {
+        // return isElementPresent(By.cssSelector("button[disabled]"));
+        return !wd.findElement(By.cssSelector("button[disabled]")).isEnabled();
     }
 
     public void openRegistrationForm() {
-        click(By.xpath("//a[text() = ' Sign up ']"));
+        click(By.xpath("//a[text()=' Sign up ']"));
     }
 
     public void fillRegistrationForm(User user) {
@@ -44,44 +67,42 @@ public class HelperUser extends HelperBase {
         type(By.id("password"), user.getPassword());
     }
 
-    public void clickCheckbox() {
-        wd.navigate().back();
-        click(By.className("checkbox-container"));
-    }
-
-    public String checkMessage() {
-        return wd.findElement(By.xpath("//h2[@class='message']")).getText();
-    }
-
-    public String checkWrongEmail() {
-        return wd.findElement(By.cssSelector("div[class^='error'] div")).getText();
-    }
-
-    public void closeDialog() {
-        if (isElementPresent(By.xpath("//button[text()='Ok']"))) {
-            click(By.xpath("//button[text()='Ok']"));
+    public void checkPolicy() {
+        if (!wd.findElement(By.id("terms-of-use")).isSelected()) {
+            click(By.cssSelector(".checkbox-container"));
         }
-        wd.navigate().refresh();
     }
 
-    public void checkTermofuse() {
-        click(By.xpath("//a[text() = 'terms of use']"));
+    public void checkPolicyXY() {
+
+        Dimension size = wd.manage().window().getSize();
+        System.out.println("Window Height " + size.getHeight());
+        System.out.println("Window Width " + size.getWidth());
+
+        WebElement label = wd.findElement(By.cssSelector("label[for='terms-of-use']"));
+
+        Rectangle rect = label.getRect();
+        int xOffset = rect.getWidth() / 2;
+
+        Actions actions = new Actions(wd);
+        actions.moveToElement(label, -xOffset, 0).click().release().perform();
+
     }
 
-    public void checkPrivacyPolicy() {
-        wd.navigate().back();
-        click(By.xpath("//a[text() = 'privacy policy']"));
+    public void checkPolicyJS() {
+        JavascriptExecutor js = (JavascriptExecutor) wd;
+        js.executeScript("document.querySelector('#terms-of-use').checked=true;");
+
     }
 
-    public boolean isYallaButtonNotActive() {
-        return !wd.findElement(By.cssSelector("button[disabled]")).isEnabled();
+    public boolean isErrorMessageContains(String message) {
+        return wd.findElement(By.cssSelector(".error")).getText().contains(message);
     }
 
-    public void clickAnyway() {
-        click(By.className("checkbox-container"));
-    }
-
-    public String checkWrongPassword() {
-        return wd.findElement(By.xpath("//div[text() = 'Password must contain minimum 8 symbols']")).getText();
+    public void login(User user) {
+        openFormLogin();
+        fillLoginForm(user);
+        submit();
+        closeDialogContainer();
     }
 }
